@@ -31,6 +31,35 @@ class DbOperations {
         }
     }
 
+    function loginUser($email, $password) {
+        $stmt = $this->conn->prepare("SELECT `password_hash` FROM `users` WHERE `email` = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $stmt->bind_result($password_hash);
+        $stmt->store_result();
+        $num_rows = $stmt->num_rows;
+        if ($num_rows > 0) {
+            $stmt->fetch();
+            if (password_verify($password, $password_hash)) {
+                return USER_AUTHENTICATED;
+            } else {
+                return USER_AUTHENTICATION_FAILURE;
+            }
+        } else {
+            return USER_NOT_FOUND;
+        }
+    }
+
+    function getUserByEmail($email) {
+        $stmt = $this->conn->prepare("SELECT * FROM `users` WHERE `email` = ?");
+        $stmt->bind_param("s", $email);
+        if ($stmt->execute()) {
+            return $stmt->get_result()->fetch_assoc();
+        } else {
+            return null;
+        }
+    }
+
     /**
      * Checks whether the given email id already exists in the users table or not.
      * @param String $email - User's email id
