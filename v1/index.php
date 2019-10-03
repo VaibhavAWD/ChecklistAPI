@@ -175,6 +175,7 @@ $app->get('/items/{id}', function($request, $response, $args) {
         $item_details['id'] = $result['id'];
         $item_details['user_id'] = $result['user_id'];
         $item_details['item'] = $result['item'];
+        $item_details['status'] = $result['status'];
         $item_details['created_at'] = $result['created_at'];
 
         $message['error'] = false;
@@ -227,6 +228,7 @@ $app->get('/items', function($request, $response, $args) {
         $item_details['id'] = $item['id'];
         $item_details['user_id'] = $item['user_id'];
         $item_details['item'] = $item['item'];
+        $item_details['status'] = $item['status'];
         $item_details['created_at'] = $item['created_at'];
         array_push($message['items'], $item_details);
     }
