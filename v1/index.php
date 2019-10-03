@@ -50,15 +50,16 @@ $app->post('/register', function($request, $response, $args) {
     if ($result == USER_CREATED_SUCCESSFULLY) {
         $message['error'] = false;
         $message['message'] = "User registered successfully";
+        return buildResponse(201, $message, $response);
     } else if ($result == FAILED_TO_CREATE_USER) {
         $message['error'] = true;
         $message['message'] = "Problem registering user. Please try again later";
+        return buildResponse(200, $message, $response);
     } else {
         $message['error'] = true;
         $message['message'] = "User with this email address already exists. Please try again";
+        return buildResponse(409, $message, $response);
     }
-
-    return buildResponse(200, $message, $response);
 });
 
 /**
@@ -96,19 +97,21 @@ $app->post('/login', function($request, $response, $args) {
             
             $message['error'] = false;
             $message['user'] = $user_details;
+            return buildResponse(200, $message, $response);
         } else {
             $message['error'] = true;
             $message['message'] = "User not found";
+            return buildResponse(404, $message, $response);
         }
     } else if ($result == USER_AUTHENTICATION_FAILURE) {
         $message['error'] = true;
         $message['message'] = "Failed to authenticate user due to wrong credentials. Please try again";
+        return buildResponse(401, $message, $response);
     } else {
         $message['error'] = true;
         $message['message'] = "User not found";
+        return buildResponse(404, $message, $response);
     }
-
-    return buildResponse(200, $message, $response);
 });
 
 /* ------------------- END USERS TABLE API -------------------------- */
@@ -140,12 +143,12 @@ $app->post('/items', function($request, $response, $args) {
     if ($result == ITEM_ADDED_SUCCESSFULLY) {
         $message['error'] = false;
         $message['message'] = "Item added successfully";
+        return buildResponse(201, $message, $response);
     } else {
         $message['error'] = true;
         $message['message'] = "Failed to add item. Please try again";
+        return buildResponse(200, $message, $response);
     }
-
-    return buildResponse(200, $message, $response);
 });
 
 $app->get('/items/{id}', function($request, $response, $args) {
