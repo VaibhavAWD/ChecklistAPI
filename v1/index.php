@@ -186,6 +186,42 @@ $app->get('/items/{id}', function($request, $response, $args) {
     }
 });
 
+$app->get('/items', function($request, $response, $args) {
+    // check required params
+    if (!hasRequiredParams(array('user_id'), $response)) {
+        return $response;
+    }
+
+    // reading post params
+    $request_data = $request->getParams();
+    $user_id = $request_data['user_id'];
+
+    // check user with this user_id exists
+    $db = new DbOperations();
+    if (!$db->getUserById($user_id)) {
+        $message['error'] = true;
+        $message['message'] = "User not found";
+        return buildResponse(404, $message, $response);
+    }
+
+    // get all items associated with the user
+    $result = $db->getItems($user_id);
+
+    $message['error'] = false;
+    $message['items'] = array();
+
+    // looping through result and preparing items array
+    while ($item = $result->fetch_assoc()) {
+        $item_details = array();
+        $item_details['id'] = $item['id'];
+        $item_details['user_id'] = $item['user_id'];
+        $item_details['item'] = $item['item'];
+        array_push($message['items'], $item_details);
+    }
+
+    return buildResponse(200, $message, $response);
+});
+
 /* ------------------- END ITEMS TABLE API -------------------------- */
 
 /* -------------------- HELPER FUNCTIONS ---------------------------- */
