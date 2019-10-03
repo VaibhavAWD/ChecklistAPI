@@ -19,4 +19,8 @@ define('USER_AUTHENTICATED', 4);
 define('USER_AUTHENTICATION_FAILURE', 5);
 define('USER_NOT_FOUND', 6);
 
+// items
+define('ITEM_ADDED_SUCCESSFULLY', 7);
+define('FAILED_TO_ADD_ITEM', 8);
+
 ?>

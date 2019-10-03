@@ -60,6 +60,15 @@ class DbOperations {
         }
     }
 
+    function getUserById($user_id) {
+        $stmt = $this->conn->prepare("SELECT `id` FROM `users` WHERE `id` = ?");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $stmt->store_result();
+        $num_rows = $stmt->num_rows;
+        return $num_rows > 0;
+    }
+
     /**
      * Checks whether the given email id already exists in the users table or not.
      * @param String $email - User's email id
@@ -78,6 +87,20 @@ class DbOperations {
     }
 
     /* ------------- END USERS TABLE OEPRATIONS ------------- */
+
+    /* ------------- ITEMS TABLE OEPRATIONS ------------- */
+
+    function addItem($user_id, $item) {
+        $stmt = $this->conn->prepare("INSERT INTO `items`(`user_id`, `item`) VALUES(?, ?)");
+        $stmt->bind_param("is", $user_id, $item);
+        if ($stmt->execute()) {
+            return ITEM_ADDED_SUCCESSFULLY;
+        } else {
+            return FAILED_TO_ADD_ITEM;
+        }
+    }
+
+    /* ------------- END ITEMS TABLE OEPRATIONS ------------- */
 
 }
 

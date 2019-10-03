@@ -113,6 +113,43 @@ $app->post('/login', function($request, $response, $args) {
 
 /* ------------------- END USERS TABLE API -------------------------- */
 
+/* ------------------- ITEMS TABLE API -------------------------- */
+
+$app->post('/items', function($request, $response, $args) {
+    // check required params
+    if (!hasRequiredParams(array('user_id', 'item'), $response)) {
+        return $response;
+    }
+
+    // reading post params
+    $request_data = $request->getParams();
+    $user_id = $request_data['user_id'];
+    $item = $request_data['item'];
+
+    // check user with this user_id exists
+    $db = new DbOperations();
+    if (!$db->getUserById($user_id)) {
+        $message['error'] = true;
+        $message['message'] = "User not found";
+        return buildResponse(200, $message, $response);
+    }
+
+    // add item
+    $result = $db->addItem($user_id, $item);
+
+    if ($result == ITEM_ADDED_SUCCESSFULLY) {
+        $message['error'] = false;
+        $message['message'] = "Item added successfully";
+    } else {
+        $message['error'] = true;
+        $message['message'] = "Failed to add item. Please try again";
+    }
+
+    return buildResponse(200, $message, $response);
+});
+
+/* ------------------- END ITEMS TABLE API -------------------------- */
+
 /* -------------------- HELPER FUNCTIONS ---------------------------- */
 function hasRequiredParams($required_params, $response) {
     $error = false;
