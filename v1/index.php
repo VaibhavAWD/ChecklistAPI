@@ -363,6 +363,36 @@ $app->delete('/items', function($request, $response, $args) {
     return buildResponse(200, $message, $response);
 });
 
+$app->delete('/clearcompleted', function($request, $response, $args) {
+    // check required params
+    if (!hasRequiredParams(array('user_id'), $response)) {
+        return $response;
+    }
+
+    // reading post params
+    $request_data = $request->getParams();
+    $user_id = $request_data['user_id'];
+
+    // check user with this user_id exists
+    $db = new DbOperations();
+    if (!$db->getUserById($user_id)) {
+        $message['error'] = true;
+        $message['message'] = "User not found";
+        return buildResponse(404, $message, $response);
+    }
+
+    // delete completed items of the user
+    if ($db->deleteCompletedItems($user_id)) {
+        $message['error'] = false;
+        $message['message'] = "Completed items were deleted successfully";
+    } else {
+        $message['error'] = true;
+        $message['message'] = "You have no completed items. All items are active";
+    }
+
+    return buildResponse(200, $message, $response);
+});
+
 /* ------------------- END ITEMS TABLE API -------------------------- */
 
 /* -------------------- HELPER FUNCTIONS ---------------------------- */

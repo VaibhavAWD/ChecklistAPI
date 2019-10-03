@@ -150,6 +150,15 @@ class DbOperations {
         return $num_affected_rows > 0;
     }
 
+    function deleteCompletedItems($user_id) {
+        $stmt = $this->conn->prepare("DELETE FROM `items` WHERE `status` = 1 AND `user_id` = ?");
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $stmt->store_result();
+        $num_affected_rows = $stmt->affected_rows;
+        return $num_affected_rows > 0;
+    }
+
     /* ------------- END ITEMS TABLE OEPRATIONS ------------- */
 
 }
