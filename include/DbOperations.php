@@ -107,9 +107,14 @@ class DbOperations {
         return $stmt->get_result()->fetch_assoc();
     }
 
-    function getItems($user_id) {
-        $stmt = $this->conn->prepare("SELECT * FROM `items` WHERE `user_id` = ? ORDER BY `created_at` DESC");
-        $stmt->bind_param("i", $user_id);
+    function getItems($user_id, $status) {
+        if ($status == -1) {
+            $stmt = $this->conn->prepare("SELECT * FROM `items` WHERE `user_id` = ? ORDER BY `created_at` DESC");
+            $stmt->bind_param("i", $user_id);
+        } else {
+            $stmt = $this->conn->prepare("SELECT * FROM `items` WHERE `status` = ? AND `user_id` = ? ORDER BY `created_at` DESC");
+            $stmt->bind_param("ii", $status, $user_id);
+        }
         $stmt->execute();
         return $stmt->get_result();
     }

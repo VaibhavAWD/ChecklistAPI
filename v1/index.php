@@ -196,6 +196,16 @@ $app->get('/items', function($request, $response, $args) {
     // reading post params
     $request_data = $request->getParams();
     $user_id = $request_data['user_id'];
+    $status = -1;
+    if (isset($request_data['status'])) {
+        $status = $request_data['status'];
+        // check valid status code
+        if ($status != 1 && $status != 0) {
+            $message['error'] = true;
+            $message['message'] = "Invalid status code. Should be either 1(completed) or 0(active)";
+            return buildResponse(400, $message, $response);
+        }
+    }
 
     // check user with this user_id exists
     $db = new DbOperations();
@@ -206,7 +216,7 @@ $app->get('/items', function($request, $response, $args) {
     }
 
     // get all items associated with the user
-    $result = $db->getItems($user_id);
+    $result = $db->getItems($user_id, $status);
 
     $message['error'] = false;
     $message['items'] = array();
