@@ -114,6 +114,15 @@ class DbOperations {
         return $stmt->get_result();
     }
 
+    function updateItem($user_id, $item_id, $item) {
+        $stmt = $this->conn->prepare("UPDATE `items` SET `item` = ? WHERE `user_id` = ? AND `id` = ?");
+        $stmt->bind_param("sii", $item, $user_id, $item_id);
+        $stmt->execute();
+        $stmt->store_result();
+        $num_affected_rows = $stmt->affected_rows;
+        return $num_affected_rows > 0;
+    }
+
     /* ------------- END ITEMS TABLE OEPRATIONS ------------- */
 
 }

@@ -224,6 +224,39 @@ $app->get('/items', function($request, $response, $args) {
     return buildResponse(200, $message, $response);
 });
 
+$app->put('/items/{id}', function($request, $response, $args) {
+    $item_id = $args['id'];
+
+    // check required params
+    if (!hasRequiredParams(array('user_id', 'item'), $response)) {
+        return $response;
+    }
+
+    // reading post params
+    $request_data = $request->getParams();
+    $user_id = $request_data['user_id'];
+    $item = $request_data['item'];
+
+    // check user with this user_id exists
+    $db = new DbOperations();
+    if (!$db->getUserById($user_id)) {
+        $message['error'] = true;
+        $message['message'] = "User not found";
+        return buildResponse(404, $message, $response);
+    }
+
+    // update item
+    if ($db->updateItem($user_id, $item_id, $item)) {
+        $message['error'] = false;
+        $message['message'] = "Item updated successfully";
+    } else {
+        $message['error'] = true;
+        $message['message'] = "Failed to update item. Please try again";
+    }
+
+    return buildResponse(200, $message, $response);
+});
+
 /* ------------------- END ITEMS TABLE API -------------------------- */
 
 /* -------------------- HELPER FUNCTIONS ---------------------------- */
