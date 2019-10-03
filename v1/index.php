@@ -289,6 +289,36 @@ $app->delete('/items/{id}', function($request, $response, $args) {
     return buildResponse(200, $message, $response);
 });
 
+$app->delete('/items', function($request, $response, $args) {
+    // check required params
+    if (!hasRequiredParams(array('user_id'), $response)) {
+        return $response;
+    }
+
+    // reading post params
+    $request_data = $request->getParams();
+    $user_id = $request_data['user_id'];
+
+    // check user with this user_id exists
+    $db = new DbOperations();
+    if (!$db->getUserById($user_id)) {
+        $message['error'] = true;
+        $message['message'] = "User not found";
+        return buildResponse(404, $message, $response);
+    }
+
+    // delete all items of the user
+    if ($db->deleteItems($user_id)) {
+        $message['error'] = false;
+        $message['message'] = "All items were deleted successfully";
+    } else {
+        $message['error'] = true;
+        $message['message'] = "Failed to delete all items. Please try again";
+    }
+
+    return buildResponse(200, $message, $response);
+});
+
 /* ------------------- END ITEMS TABLE API -------------------------- */
 
 /* -------------------- HELPER FUNCTIONS ---------------------------- */
