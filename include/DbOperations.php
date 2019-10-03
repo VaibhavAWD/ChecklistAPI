@@ -12,4 +12,6 @@ class DbOperations {
     
     /* ------------- implement your database operation functions here ------------- */
 
+}
+
 ?>
