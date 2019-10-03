@@ -100,6 +100,13 @@ class DbOperations {
         }
     }
 
+    function getItem($user_id, $item_id) {
+        $stmt = $this->conn->prepare("SELECT * FROM `items` WHERE `user_id` = ? AND `id` = ?");
+        $stmt->bind_param("ii", $user_id, $item_id);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_assoc();
+    }
+
     /* ------------- END ITEMS TABLE OEPRATIONS ------------- */
 
 }

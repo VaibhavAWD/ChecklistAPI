@@ -148,6 +148,44 @@ $app->post('/items', function($request, $response, $args) {
     return buildResponse(200, $message, $response);
 });
 
+$app->get('/items/{id}', function($request, $response, $args) {
+    $item_id = $args['id'];
+
+    // check required params
+    if (!hasRequiredParams(array('user_id'), $response)) {
+        return $response;
+    }
+
+    // reading post params
+    $request_data = $request->getParams();
+    $user_id = $request_data['user_id'];
+
+    // check user with this user_id exists
+    $db = new DbOperations();
+    if (!$db->getUserById($user_id)) {
+        $message['error'] = true;
+        $message['message'] = "User not found";
+        return buildResponse(404, $message, $response);
+    }
+
+    $result = $db->getItem($user_id, $item_id);
+
+    if ($result != null) {
+        $item_details = array();
+        $item_details['id'] = $result['id'];
+        $item_details['user_id'] = $result['user_id'];
+        $item_details['item'] = $result['item'];
+
+        $message['error'] = false;
+        $message['item'] = $item_details;
+        return buildResponse(200, $message, $response);
+    } else {
+        $message['error'] = true;
+        $message['message'] = "Requested item not found";
+        return buildResponse(404, $message, $response);
+    }
+});
+
 /* ------------------- END ITEMS TABLE API -------------------------- */
 
 /* -------------------- HELPER FUNCTIONS ---------------------------- */
