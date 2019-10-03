@@ -15,6 +15,7 @@ class DbOperations {
     function registerUser($name, $email, $password) {
         // encrypt the password
         $password_hash = $this->getEncryptedPassword($password);
+        $api_key = $this->generateApiKey();
 
         // check for email conflict
         if ($this->isEmailRegistered($email)) {
@@ -22,8 +23,8 @@ class DbOperations {
         }
 
         // add user
-        $stmt = $this->conn->prepare("INSERT INTO `users`(`name`, `email`, `password_hash`) VALUES(?, ?, ?)");
-        $stmt->bind_param("sss", $name, $email, $password_hash);
+        $stmt = $this->conn->prepare("INSERT INTO `users`(`name`, `email`, `password_hash`, `api_key`) VALUES(?, ?, ?, ?)");
+        $stmt->bind_param("ssss", $name, $email, $password_hash, $api_key);
         if ($stmt->execute()) {
             return USER_CREATED_SUCCESSFULLY;
         } else {
@@ -84,6 +85,13 @@ class DbOperations {
 
     private function getEncryptedPassword($password) {
         return password_hash($password, PASSWORD_DEFAULT);
+    }
+
+    /**
+     * Generating random Unique MD5 String for user Api key
+     */
+    private function generateApiKey() {
+        return md5(uniqid(rand(), true));
     }
 
     /* ------------- END USERS TABLE OEPRATIONS ------------- */
