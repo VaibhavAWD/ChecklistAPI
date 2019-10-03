@@ -123,6 +123,15 @@ class DbOperations {
         return $num_affected_rows > 0;
     }
 
+    function deleteItem($user_id, $item_id) {
+        $stmt = $this->conn->prepare("DELETE FROM `items` WHERE `user_id` = ? AND `id` = ?");
+        $stmt->bind_param("ii", $user_id, $item_id);
+        $stmt->execute();
+        $stmt->store_result();
+        $num_affected_rows = $stmt->affected_rows;
+        return $num_affected_rows > 0;
+    }
+
     /* ------------- END ITEMS TABLE OEPRATIONS ------------- */
 
 }
