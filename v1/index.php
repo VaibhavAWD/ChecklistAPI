@@ -257,6 +257,50 @@ $app->put('/items/{id}', function($request, $response, $args) {
     return buildResponse(200, $message, $response);
 });
 
+$app->put('/items/{id}/status/{code}', function($request, $response, $args) {
+    $item_id = $args['id'];
+    $status = $args['code'];
+
+    // check valid status code
+    if ($status != 1 && $status != 0) {
+        $message['error'] = true;
+        $message['message'] = "Invalid status code. Should be either 1(completed) or 0(active)";
+        return buildResponse(400, $message, $response);
+    }
+
+    // check required params
+    if (!hasRequiredParams(array('user_id'), $response)) {
+        return $response;
+    }
+
+    // reading post params
+    $request_data = $request->getParams();
+    $user_id = $request_data['user_id'];
+
+    // check user with this user_id exists
+    $db = new DbOperations();
+    if (!$db->getUserById($user_id)) {
+        $message['error'] = true;
+        $message['message'] = "User not found";
+        return buildResponse(404, $message, $response);
+    }
+
+    // update status of the item
+    if ($db->updateStatus($user_id, $item_id, $status)) {
+        $message['error'] = false;
+        if ($status == 1) {
+            $message['message'] = "Item marked completed successfully";
+        } else {
+            $message['message'] = "Item marked active successfully";
+        }
+    } else {
+        $message['error'] = true;
+        $message['message'] = "Failed to update status of the item. Please try again";
+    }
+
+    return buildResponse(200, $message, $response);
+});
+
 $app->delete('/items/{id}', function($request, $response, $args) {
     $item_id = $args['id'];
 
