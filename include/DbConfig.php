@@ -3,7 +3,7 @@
  * Db Constants
  */
 define('DB_HOST', 'localhost');
-define('DB_NAME', '[your_database_name]');
+define('DB_NAME', 'myapis_checklist');
 define('DB_USERNAME', 'root');
 define('DB_PASSWORD', '');
 
