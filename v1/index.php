@@ -1,6 +1,7 @@
 <?php
 require '../libs/vendor/autoload.php';
 require_once '../include/DbOperations.php';
+require_once '../include/controller/AuthController.php';
 
 $app = new Slim\App();
 
@@ -120,43 +121,6 @@ $app->post('/login', function($request, $response, $args) {
 
 /* ------------------- ITEMS TABLE API -------------------------- */
 
-/**
- * Middleware to authenticate the user by api key.
- */
-$authenticate = function ($request, $response, $next) {
-    // Getting request headers
-    $headers = apache_request_headers();
- 
-    // Verifying Authorization Header
-    if (isset($headers['Authorization'])) {
-        $db = new DbOperations();
- 
-        // get the api key
-        $api_key = $headers['Authorization'];
-        // validating api key
-        if (!$db->isValidApiKey($api_key)) {
-            // api key is not present in users table
-            $message["error"] = true;
-            $message["message"] = "Access Denied. Invalid Api key";
-            return buildResponse(401, $message, $response);
-        } else {
-            global $user_id;
-            // get user primary key id
-            $user = $db->getUserId($api_key);
-            if ($user != NULL) 
-                $user_id = $user["id"];
-                // proceed ahead
-                $response = $next($request, $response);
-                return $response;
-        }
-    } else {
-        // api key is missing in header
-        $message["error"] = true;
-        $message["message"] = "Api key is misssing";
-        return buildResponse(400, $message, $response);
-    }
-};
-
 $app->post('/items', function($request, $response, $args) {
     // check required params
     if (!hasRequiredParams(array('item'), $response)) {
@@ -181,7 +145,7 @@ $app->post('/items', function($request, $response, $args) {
         $message['message'] = "Failed to add item. Please try again";
         return buildResponse(200, $message, $response);
     }
-})->add($authenticate);
+})->add(\AuthController::class);
 
 $app->get('/items/{id}', function($request, $response, $args) {
     $item_id = $args['id'];
@@ -207,7 +171,7 @@ $app->get('/items/{id}', function($request, $response, $args) {
         $message['message'] = "Requested item not found";
         return buildResponse(404, $message, $response);
     }
-})->add($authenticate);
+})->add(\AuthController::class);
 
 $app->get('/items', function($request, $response, $args) {
     // reading post params
@@ -243,7 +207,7 @@ $app->get('/items', function($request, $response, $args) {
     }
 
     return buildResponse(200, $message, $response);
-})->add($authenticate);
+})->add(\AuthController::class);
 
 $app->put('/items/{id}', function($request, $response, $args) {
     $item_id = $args['id'];
@@ -269,7 +233,7 @@ $app->put('/items/{id}', function($request, $response, $args) {
     }
 
     return buildResponse(200, $message, $response);
-})->add($authenticate);
+})->add(\AuthController::class);
 
 $app->put('/items/{id}/status/{code}', function($request, $response, $args) {
     $item_id = $args['id'];
@@ -298,7 +262,7 @@ $app->put('/items/{id}/status/{code}', function($request, $response, $args) {
     }
 
     return buildResponse(200, $message, $response);
-})->add($authenticate);
+})->add(\AuthController::class);
 
 $app->delete('/items/{id}', function($request, $response, $args) {
     $item_id = $args['id'];
@@ -314,7 +278,7 @@ $app->delete('/items/{id}', function($request, $response, $args) {
     }
 
     return buildResponse(200, $message, $response);
-})->add($authenticate);
+})->add(\AuthController::class);
 
 $app->delete('/items', function($request, $response, $args) {
     global $user_id;
@@ -329,7 +293,7 @@ $app->delete('/items', function($request, $response, $args) {
     }
 
     return buildResponse(200, $message, $response);
-})->add($authenticate);
+})->add(\AuthController::class);
 
 $app->delete('/clearcompleted', function($request, $response, $args) {
     global $user_id;
@@ -344,7 +308,7 @@ $app->delete('/clearcompleted', function($request, $response, $args) {
     }
 
     return buildResponse(200, $message, $response);
-})->add($authenticate);
+})->add(\AuthController::class);
 
 /* ------------------- END ITEMS TABLE API -------------------------- */
 
