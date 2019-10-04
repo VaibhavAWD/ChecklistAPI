@@ -6,6 +6,8 @@ $app = new Slim\App();
 
 $message = array();
 
+$user_id = NULL;
+
 /**
  * Testing purpose endpoint
  * endpoint - /hello/{name}
@@ -118,16 +120,53 @@ $app->post('/login', function($request, $response, $args) {
 
 /* ------------------- ITEMS TABLE API -------------------------- */
 
+/**
+ * Middleware to authenticate the user by api key.
+ */
+$authenticate = function ($request, $response, $next) {
+    // Getting request headers
+    $headers = apache_request_headers();
+ 
+    // Verifying Authorization Header
+    if (isset($headers['Authorization'])) {
+        $db = new DbOperations();
+ 
+        // get the api key
+        $api_key = $headers['Authorization'];
+        // validating api key
+        if (!$db->isValidApiKey($api_key)) {
+            // api key is not present in users table
+            $message["error"] = true;
+            $message["message"] = "Access Denied. Invalid Api key";
+            return buildResponse(401, $message, $response);
+        } else {
+            global $user_id;
+            // get user primary key id
+            $user = $db->getUserId($api_key);
+            if ($user != NULL) 
+                $user_id = $user["id"];
+                // proceed ahead
+                $response = $next($request, $response);
+                return $response;
+        }
+    } else {
+        // api key is missing in header
+        $message["error"] = true;
+        $message["message"] = "Api key is misssing";
+        return buildResponse(400, $message, $response);
+    }
+};
+
 $app->post('/items', function($request, $response, $args) {
     // check required params
-    if (!hasRequiredParams(array('user_id', 'item'), $response)) {
+    if (!hasRequiredParams(array('item'), $response)) {
         return $response;
     }
 
     // reading post params
     $request_data = $request->getParams();
-    $user_id = $request_data['user_id'];
     $item = $request_data['item'];
+    global $user_id;
 
     // check user with this user_id exists
     $db = new DbOperations();
@@ -149,7 +188,7 @@ $app->post('/items', function($request, $response, $args) {
         $message['message'] = "Failed to add item. Please try again";
         return buildResponse(200, $message, $response);
     }
-});
+})->add($authenticate);
 
 $app->get('/items/{id}', function($request, $response, $args) {
     $item_id = $args['id'];
@@ -438,6 +477,7 @@ function buildResponse($status_code, $message, $response) {
     $response->withHeader('Content-type', 'application/json');
     $response->withStatus($status_code);
     $response->write(json_encode($message));
+    return $response;
 }
 
 /**

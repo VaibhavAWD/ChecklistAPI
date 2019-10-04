@@ -71,6 +71,22 @@ class DbOperations {
     }
 
     /**
+     * Get user id by api key
+     * @param string $api_key User API key
+     * @return int User Id
+     */
+    function getUserId($api_key) {
+        $stmt = $this->conn->prepare("SELECT `id` FROM `users` WHERE `api_key` = ?");
+        $stmt->bind_param("s", $api_key);
+        if ($stmt->execute()) {
+            $user_id = $stmt->get_result()->fetch_assoc();
+            return $user_id;
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Checks whether the given email id already exists in the users table or not.
      * @param String $email - User's email id
      */
@@ -85,6 +101,20 @@ class DbOperations {
 
     private function getEncryptedPassword($password) {
         return password_hash($password, PASSWORD_DEFAULT);
+    }
+
+    /**
+     * Validate user api key
+     * @param string $api_key User API key
+     * @return boolean
+     */
+    function isValidApiKey($api_key) {
+        $stmt = $this->conn->prepare("SELECT `id` FROM `users` WHERE `api_key` = ?");
+        $stmt->bind_param("s", $api_key);
+        $stmt->execute();
+        $stmt->store_result();
+        $num_rows = $stmt->num_rows;
+        return $num_rows > 0;
     }
 
     /**
