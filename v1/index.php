@@ -168,15 +168,8 @@ $app->post('/items', function($request, $response, $args) {
     $item = $request_data['item'];
     global $user_id;
 
-    // check user with this user_id exists
-    $db = new DbOperations();
-    if (!$db->getUserById($user_id)) {
-        $message['error'] = true;
-        $message['message'] = "User not found";
-        return buildResponse(200, $message, $response);
-    }
-
     // add item
+    $db = new DbOperations();
     $result = $db->addItem($user_id, $item);
 
     if ($result == ITEM_ADDED_SUCCESSFULLY) {
@@ -192,24 +185,10 @@ $app->post('/items', function($request, $response, $args) {
 
 $app->get('/items/{id}', function($request, $response, $args) {
     $item_id = $args['id'];
+    global $user_id;
 
-    // check required params
-    if (!hasRequiredParams(array('user_id'), $response)) {
-        return $response;
-    }
-
-    // reading post params
-    $request_data = $request->getParams();
-    $user_id = $request_data['user_id'];
-
-    // check user with this user_id exists
+    // get single item
     $db = new DbOperations();
-    if (!$db->getUserById($user_id)) {
-        $message['error'] = true;
-        $message['message'] = "User not found";
-        return buildResponse(404, $message, $response);
-    }
-
     $result = $db->getItem($user_id, $item_id);
 
     if ($result != null) {
@@ -228,17 +207,12 @@ $app->get('/items/{id}', function($request, $response, $args) {
         $message['message'] = "Requested item not found";
         return buildResponse(404, $message, $response);
     }
-});
+})->add($authenticate);
 
 $app->get('/items', function($request, $response, $args) {
-    // check required params
-    if (!hasRequiredParams(array('user_id'), $response)) {
-        return $response;
-    }
-
     // reading post params
     $request_data = $request->getParams();
-    $user_id = $request_data['user_id'];
+    global $user_id;
     $status = -1;
     if (isset($request_data['status'])) {
         $status = $request_data['status'];
@@ -250,15 +224,8 @@ $app->get('/items', function($request, $response, $args) {
         }
     }
 
-    // check user with this user_id exists
-    $db = new DbOperations();
-    if (!$db->getUserById($user_id)) {
-        $message['error'] = true;
-        $message['message'] = "User not found";
-        return buildResponse(404, $message, $response);
-    }
-
     // get all items associated with the user
+    $db = new DbOperations();
     $result = $db->getItems($user_id, $status);
 
     $message['error'] = false;
@@ -276,30 +243,23 @@ $app->get('/items', function($request, $response, $args) {
     }
 
     return buildResponse(200, $message, $response);
-});
+})->add($authenticate);
 
 $app->put('/items/{id}', function($request, $response, $args) {
     $item_id = $args['id'];
 
     // check required params
-    if (!hasRequiredParams(array('user_id', 'item'), $response)) {
+    if (!hasRequiredParams(array('item'), $response)) {
         return $response;
     }
 
     // reading post params
     $request_data = $request->getParams();
-    $user_id = $request_data['user_id'];
+    global $user_id;
     $item = $request_data['item'];
 
-    // check user with this user_id exists
-    $db = new DbOperations();
-    if (!$db->getUserById($user_id)) {
-        $message['error'] = true;
-        $message['message'] = "User not found";
-        return buildResponse(404, $message, $response);
-    }
-
     // update item
+    $db = new DbOperations();
     if ($db->updateItem($user_id, $item_id, $item)) {
         $message['error'] = false;
         $message['message'] = "Item updated successfully";
@@ -309,11 +269,12 @@ $app->put('/items/{id}', function($request, $response, $args) {
     }
 
     return buildResponse(200, $message, $response);
-});
+})->add($authenticate);
 
 $app->put('/items/{id}/status/{code}', function($request, $response, $args) {
     $item_id = $args['id'];
     $status = $args['code'];
+    global $user_id;
 
     // check valid status code
     if ($status != 1 && $status != 0) {
@@ -322,24 +283,8 @@ $app->put('/items/{id}/status/{code}', function($request, $response, $args) {
         return buildResponse(400, $message, $response);
     }
 
-    // check required params
-    if (!hasRequiredParams(array('user_id'), $response)) {
-        return $response;
-    }
-
-    // reading post params
-    $request_data = $request->getParams();
-    $user_id = $request_data['user_id'];
-
-    // check user with this user_id exists
-    $db = new DbOperations();
-    if (!$db->getUserById($user_id)) {
-        $message['error'] = true;
-        $message['message'] = "User not found";
-        return buildResponse(404, $message, $response);
-    }
-
     // update status of the item
+    $db = new DbOperations();
     if ($db->updateStatus($user_id, $item_id, $status)) {
         $message['error'] = false;
         if ($status == 1) {
@@ -353,29 +298,13 @@ $app->put('/items/{id}/status/{code}', function($request, $response, $args) {
     }
 
     return buildResponse(200, $message, $response);
-});
+})->add($authenticate);
 
 $app->delete('/items/{id}', function($request, $response, $args) {
     $item_id = $args['id'];
-
-    // check required params
-    if (!hasRequiredParams(array('user_id'), $response)) {
-        return $response;
-    }
-
-    // reading post params
-    $request_data = $request->getParams();
-    $user_id = $request_data['user_id'];
-
-    // check user with this user_id exists
-    $db = new DbOperations();
-    if (!$db->getUserById($user_id)) {
-        $message['error'] = true;
-        $message['message'] = "User not found";
-        return buildResponse(404, $message, $response);
-    }
-
+    global $user_id;
     // delete item
+    $db = new DbOperations();
     if ($db->deleteItem($user_id, $item_id)) {
         $message['error'] = false;
         $message['message'] = "Item deleted successfully";
@@ -385,27 +314,12 @@ $app->delete('/items/{id}', function($request, $response, $args) {
     }
 
     return buildResponse(200, $message, $response);
-});
+})->add($authenticate);
 
 $app->delete('/items', function($request, $response, $args) {
-    // check required params
-    if (!hasRequiredParams(array('user_id'), $response)) {
-        return $response;
-    }
-
-    // reading post params
-    $request_data = $request->getParams();
-    $user_id = $request_data['user_id'];
-
-    // check user with this user_id exists
-    $db = new DbOperations();
-    if (!$db->getUserById($user_id)) {
-        $message['error'] = true;
-        $message['message'] = "User not found";
-        return buildResponse(404, $message, $response);
-    }
-
+    global $user_id;
     // delete all items of the user
+    $db = new DbOperations();
     if ($db->deleteItems($user_id)) {
         $message['error'] = false;
         $message['message'] = "All items were deleted successfully";
@@ -415,27 +329,12 @@ $app->delete('/items', function($request, $response, $args) {
     }
 
     return buildResponse(200, $message, $response);
-});
+})->add($authenticate);
 
 $app->delete('/clearcompleted', function($request, $response, $args) {
-    // check required params
-    if (!hasRequiredParams(array('user_id'), $response)) {
-        return $response;
-    }
-
-    // reading post params
-    $request_data = $request->getParams();
-    $user_id = $request_data['user_id'];
-
-    // check user with this user_id exists
-    $db = new DbOperations();
-    if (!$db->getUserById($user_id)) {
-        $message['error'] = true;
-        $message['message'] = "User not found";
-        return buildResponse(404, $message, $response);
-    }
-
+    global $user_id;
     // delete completed items of the user
+    $db = new DbOperations();
     if ($db->deleteCompletedItems($user_id)) {
         $message['error'] = false;
         $message['message'] = "Completed items were deleted successfully";
@@ -445,7 +344,7 @@ $app->delete('/clearcompleted', function($request, $response, $args) {
     }
 
     return buildResponse(200, $message, $response);
-});
+})->add($authenticate);
 
 /* ------------------- END ITEMS TABLE API -------------------------- */
 
